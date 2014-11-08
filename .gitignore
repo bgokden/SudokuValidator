@@ -1,4 +1,5 @@
 /.name
 /.idea/
+/.idea/libraries
 /target/
 *.DS_Store
