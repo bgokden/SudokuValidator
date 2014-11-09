@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -12,11 +14,31 @@ import java.util.concurrent.*;
  * Created by berkgokden on 11/8/14.
  */
 public class SudokuFileValidator {
-    public SudokuFileValidator(String filename) {
-        ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource(filename).getFile());
+    private String file;
+
+    public SudokuFileValidator() {
+
+
+    }
+
+    public List<String> validate(String filename) {
+        try {
+            File file = new File(filename);
+            return validate(file);
+        } catch (Exception e) {
+            //e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<String> validate(File file) {
+        if (file == null) {
+            return null;
+        }
+        List<String> list = new LinkedList<String>();
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         Map<String, Future<Boolean>> lineValidations = new ConcurrentHashMap<String, Future<Boolean>>();
+        int numberofvalidlines = 0;
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
@@ -25,19 +47,23 @@ public class SudokuFileValidator {
                 if (isValidLine(line)) {
                     Future<Boolean> future = executorService.submit(new Sudoku9x9BlockValidator(executorService, line));
                     lineValidations.put(line, future);
-//                    System.out.println(validate(line) + ":");
-//                    System.out.println(line);
+                    numberofvalidlines++;
                 }
             }
             br.close();
 
-            int numberOfInvalidSolutions = 0;
+            //int numberOfInvalidSolutions = 0;
+            int numberofprocessedlines = 0;
             for (Map.Entry<String, Future<Boolean>> entry : lineValidations.entrySet())
             {
+
                 try {
-                    if (entry.getValue().get() == false) {
-                        System.out.println(entry.getKey());
-                        numberOfInvalidSolutions++;
+                    Boolean result = entry.getValue().get();
+                    numberofprocessedlines++;
+                    if ( result == false) {
+                        list.add(entry.getKey());
+                        //System.out.println(entry.getKey());
+                        //numberOfInvalidSolutions++;
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -45,47 +71,14 @@ public class SudokuFileValidator {
                     e.printStackTrace();
                 }
             }
-            System.out.println("Number Of Invalid Solutions:"+numberOfInvalidSolutions);
-
+            //System.out.println("Number Of Invalid Solutions:"+numberOfInvalidSolutions);
+            System.out.println(numberofvalidlines+"/"+numberofprocessedlines);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         executorService.shutdown();
-    }
-
-    public boolean validate(String line) {
-        Map<Integer, String> boxes = new HashMap<Integer, String>();
-        StringBuilder stringBuilder = new StringBuilder();
-
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                int offset = (i*27+j*3);
-                stringBuilder.setLength(0);
-                stringBuilder.append(line.substring(offset,offset+3));
-                stringBuilder.append(line.substring(offset+9,offset+12));
-                stringBuilder.append(line.substring(offset+18,offset+21));
-                String block = stringBuilder.toString();
-                if (check(block)==false) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private boolean check(String block) {
-        int[] checkList = new int[9];
-        for (int i = 0; i < block.length(); i++) {
-            // there is simple trick to distract a char from another char to get its digits value
-            checkList[block.charAt(i) - '1' ] = 1;
-        }
-        int sum = 0;
-        for (int i = 0; i < checkList.length; i++) {
-            sum += checkList[i];
-        }
-        return (sum == 9);
+        return list;
     }
 
     public static boolean isValidLine(String line) {

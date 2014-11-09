@@ -15,11 +15,16 @@ public class Sudoku9x9BlockValidator implements Callable<Boolean> {
     public Sudoku9x9BlockValidator(ExecutorService executorService, String sudoku9x9Block) {
         this.executorService = executorService;
         this.sudoku9x9Block = sudoku9x9Block;
-        this.check = true;
+        this.setCheck(true);
     }
 
     @Override
     public Boolean call() throws Exception {
+       return this.validate(this.sudoku9x9Block);
+    }
+
+    public boolean validate(String block) {
+        this.setCheck(true);
         Map<Integer, Future<Boolean>> cases = new ConcurrentHashMap<Integer, Future<Boolean>>();
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -31,9 +36,9 @@ public class Sudoku9x9BlockValidator implements Callable<Boolean> {
                 }
                 int offset = (i*27+j*3);
                 stringBuilder.setLength(0);
-                stringBuilder.append(sudoku9x9Block.substring(offset,offset+3));
-                stringBuilder.append(sudoku9x9Block.substring(offset+9,offset+12));
-                stringBuilder.append(sudoku9x9Block.substring(offset+18,offset+21));
+                stringBuilder.append(block.substring(offset, offset+3));
+                stringBuilder.append(block.substring(offset+9, offset+12));
+                stringBuilder.append(block.substring(offset+18, offset+21));
                 Future<Boolean> future = executorService.submit(new Sudoku9DigitValidator(stringBuilder.toString(), this));
                 cases.put(caseId, future);
                 caseId++;
@@ -45,7 +50,7 @@ public class Sudoku9x9BlockValidator implements Callable<Boolean> {
             if (!isCheck()) {
                 return false;
             }
-            Future<Boolean> future = executorService.submit(new Sudoku9DigitValidator(sudoku9x9Block.substring(i*9,i*9+9), this));
+            Future<Boolean> future = executorService.submit(new Sudoku9DigitValidator(block.substring(i*9,i*9+9), this));
             cases.put(caseId, future);
             caseId++;
         }
@@ -57,7 +62,7 @@ public class Sudoku9x9BlockValidator implements Callable<Boolean> {
             }
             stringBuilder.setLength(0);
             for (int j = 0; j < 9; j++) {
-                stringBuilder.append(sudoku9x9Block.charAt(i+j*9));
+                stringBuilder.append(block.charAt(i+j*9));
             }
 
             Future<Boolean> future = executorService.submit(new Sudoku9DigitValidator(stringBuilder.toString(), this));

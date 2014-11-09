@@ -14,19 +14,24 @@ public class Sudoku9DigitValidator implements Callable<Boolean> {
     }
     @Override
     public Boolean call() throws Exception {
+        if (this.validate(this.sudoku9Digits) == false) {
+            sudoku9x9BlockValidator.setCheckFalse();
+            return false;
+        }
+        return true;
+    }
+
+    public boolean validate(String series) {
         int[] checkList = new int[9];
-        for (int i = 0; i < sudoku9Digits.length(); i++) {
+        for (int i = 0; i < series.length(); i++) {
             // there is simple trick to distract a char from another char to get its digits value
-            checkList[sudoku9Digits.charAt(i) - '1' ] = 1;
+            checkList[series.charAt(i) - '1' ] = 1;
         }
         int sum = 0;
         for (int i = 0; i < checkList.length; i++) {
             sum += checkList[i];
         }
-        if (sum == 9) {
-            sudoku9x9BlockValidator.setCheckFalse();
-            return false;
-        }
-        return true;
+        return (sum == 9);
+
     }
 }
