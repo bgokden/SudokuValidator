@@ -1,0 +1,3 @@
+mvn archetype:generate -DgroupId=com.berkgokden -DartifactId=SudokuValidator -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -s /Users/berkgokden/.m2/settings2.xml
+mvn exec:java -Dexec.mainClass="com.berkgokden.App" -Dexec.args="/Users/berkgokden/SudokuValidator/target/test-classes/file/samples.txt" -s /Users/berkgokden/.m2/settings2.xml
+java -jar target/SudokuValidator-1.0-SNAPSHOT-jar-with-dependencies.jar ~/SudokuValidator/src/main/resources/file/samples.txt
