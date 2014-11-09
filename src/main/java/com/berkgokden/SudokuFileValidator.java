@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.*;
 
 /**
  * Created by berkgokden on 11/8/14.
@@ -14,20 +15,43 @@ public class SudokuFileValidator {
     public SudokuFileValidator(String filename) {
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(classLoader.getResource(filename).getFile());
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        Map<String, Future<Boolean>> lineValidations = new ConcurrentHashMap<String, Future<Boolean>>();
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
             while ((line = br.readLine()) != null) {
                 // process the line.
                 if (isValidLine(line)) {
-                    System.out.println(validate(line) + ":");
-                    System.out.println(line);
+                    Future<Boolean> future = executorService.submit(new Sudoku9x9BlockValidator(executorService, line));
+                    lineValidations.put(line, future);
+//                    System.out.println(validate(line) + ":");
+//                    System.out.println(line);
                 }
             }
             br.close();
+
+            int numberOfInvalidSolutions = 0;
+            for (Map.Entry<String, Future<Boolean>> entry : lineValidations.entrySet())
+            {
+                try {
+                    if (entry.getValue().get() == false) {
+                        System.out.println(entry.getKey());
+                        numberOfInvalidSolutions++;
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+            System.out.println("Number Of Invalid Solutions:"+numberOfInvalidSolutions);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        executorService.shutdown();
     }
 
     public boolean validate(String line) {
