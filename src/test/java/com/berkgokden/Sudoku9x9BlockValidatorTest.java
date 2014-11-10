@@ -1,13 +1,12 @@
 package com.berkgokden;
 
+import com.berkgokden.Impl.Sudoku9x9BlockValidator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static org.junit.Assert.*;
 
 public class Sudoku9x9BlockValidatorTest {
 
@@ -34,10 +33,10 @@ public class Sudoku9x9BlockValidatorTest {
         boolean mustTrue = sudoku9x9BlockValidator.validate(blockTrue);
         System.out.println("Must True:" + mustTrue);
 
-        String testEfalse = "123456789496738215758192246974215863231687594685349127567824931819563472342971658";
+        blockFalse = "123456789496738215758192246974215863231687594685349127567824931819563472342971658";
 
-        boolean efalse = sudoku9x9BlockValidator.validate(testEfalse);
-        System.out.println("Expected False:" + efalse);
+        mustFalse = sudoku9x9BlockValidator.validate(blockFalse);
+        System.out.println("Must False:" + mustFalse);
 
         executorService.shutdown();
 

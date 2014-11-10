@@ -1,5 +1,7 @@
 package com.berkgokden;
 
+import com.berkgokden.Impl.SudokuFileValidator;
+import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +13,8 @@ import static org.junit.Assert.*;
 
 public class SudokuFileValidatorTest {
 
+    static final Logger logger = Logger.getLogger(SudokuFileValidatorTest.class);
+
     private SudokuFileValidator sudokuFileValidator;
 
     @Before
@@ -20,6 +24,7 @@ public class SudokuFileValidatorTest {
 
     @Test
     public void testSamplesFile() {
+        logger.debug("Testing samples.txt file");
         String filename = "file/samples.txt";
 
         this.sudokuFileValidator = new SudokuFileValidator();
@@ -27,6 +32,7 @@ public class SudokuFileValidatorTest {
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(classLoader.getResource(filename).getFile());
         System.out.println(file.getPath());
+        logger.debug("Testing samples.txt file path:"+file.getPath());
 
         List<String> listOfInvalidSolutions = sudokuFileValidator.validate(file.getPath());
 
@@ -40,16 +46,7 @@ public class SudokuFileValidatorTest {
             System.err.println("File name needed.");
         }
         assertTrue(true);
-        System.out.println("@Test - true");
-    }
-
-    @Test
-    public void shouldReturnFalse() {
-        String line = "123453789578139624496872153952381467641297835387564291719623548864915372235748916";
-        //System.out.println(sudokuFileValidator.validate(line) + ":");
-        System.out.println(line);
-        //assertTrue(sudokuFileValidator.validate(line));
-        System.out.println("@Test - true");
+        logger.debug("Test run with success");
     }
 
     @After

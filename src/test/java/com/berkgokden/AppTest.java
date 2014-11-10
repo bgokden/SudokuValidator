@@ -21,7 +21,7 @@ public class AppTest {
     }
 
     @Test
-    public void shouldPrint() {
+    public void shouldValidatePrintInvalidSolutions() {
         String filename = "file/samples.txt";
 
         ClassLoader classLoader = getClass().getClassLoader();

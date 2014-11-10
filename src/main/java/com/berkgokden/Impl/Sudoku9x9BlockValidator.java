@@ -1,14 +1,15 @@
-package com.berkgokden;
+package com.berkgokden.Impl;
 
-import java.util.HashMap;
+import org.apache.log4j.Logger;
+
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.*;
 
 /**
  * Created by berkgokden on 11/9/14.
  */
 public class Sudoku9x9BlockValidator implements Callable<Boolean> {
+    private static final Logger logger = Logger.getLogger(Sudoku9x9BlockValidator.class);
     private String sudoku9x9Block;
     private ExecutorService executorService;
     private volatile boolean check;
@@ -29,6 +30,8 @@ public class Sudoku9x9BlockValidator implements Callable<Boolean> {
         StringBuilder stringBuilder = new StringBuilder();
 
         int caseId = 0;
+
+        //smaller blocks
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 if (!isCheck()) {
@@ -70,9 +73,20 @@ public class Sudoku9x9BlockValidator implements Callable<Boolean> {
             caseId++;
         }
 
-        //main reason for this loop to ensure that every check is done and completed.
+        //main reason for this loop to ensure that every check is done and completed if there is no invalid condition
+        boolean result = false;
         for (Map.Entry<Integer, Future<Boolean>> aCase : cases.entrySet()) {
-            if (aCase.getValue().equals(false) || !isCheck()) {
+            //blocks on future.get
+            try {
+                result = aCase.getValue().get().booleanValue();
+            } catch (InterruptedException e) {
+                logger.warn("A thread interrupted unexpectedly while working on a case", e);
+                //e.printStackTrace();
+            } catch (ExecutionException e) {
+                logger.warn("A thread experienced error while working on a case", e);
+                //e.printStackTrace();
+            }
+            if (!result || !isCheck()) {
                 return false;
             }
         }
@@ -88,6 +102,7 @@ public class Sudoku9x9BlockValidator implements Callable<Boolean> {
         this.check = check;
     }
 
+    //I could have used setCheck(false) bu this is an important operation so I added a separeted method
     public synchronized void setCheckFalse() {
         this.check = false;
     }

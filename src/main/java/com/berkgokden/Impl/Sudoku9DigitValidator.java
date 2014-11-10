@@ -1,4 +1,4 @@
-package com.berkgokden;
+package com.berkgokden.Impl;
 
 import java.util.concurrent.Callable;
 

@@ -1,10 +1,9 @@
-package com.berkgokden;
+package com.berkgokden.Impl;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashMap;
+import com.berkgokden.ISudokuValidator;
+import org.apache.log4j.Logger;
+
+import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -13,26 +12,29 @@ import java.util.concurrent.*;
 /**
  * Created by berkgokden on 11/8/14.
  */
-public class SudokuFileValidator {
-    private String file;
+public class SudokuFileValidator implements ISudokuValidator {
+
+    static final Logger logger = Logger.getLogger(SudokuFileValidator.class);
 
     public SudokuFileValidator() {
-
-
     }
 
     public List<String> validate(String filename) {
+        Reader reader = null;
         try {
             File file = new File(filename);
-            return validate(file);
+            reader = new FileReader(file);
         } catch (Exception e) {
+            logger.warn("File can not be opened :" + filename, e);
+            System.err.println("File can not be opened :" + filename);
             //e.printStackTrace();
+            return null;
         }
-        return null;
+        return validate(reader);
     }
 
-    public List<String> validate(File file) {
-        if (file == null) {
+    public List<String> validate(Reader reader) {
+        if (reader == null) {
             return null;
         }
         List<String> list = new LinkedList<String>();
@@ -40,7 +42,7 @@ public class SudokuFileValidator {
         Map<String, Future<Boolean>> lineValidations = new ConcurrentHashMap<String, Future<Boolean>>();
         int numberofvalidlines = 0;
         try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
+            BufferedReader br = new BufferedReader(reader);
             String line;
             while ((line = br.readLine()) != null) {
                 // process the line.
@@ -66,15 +68,23 @@ public class SudokuFileValidator {
                         //numberOfInvalidSolutions++;
                     }
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    logger.warn("A thread interrupted unexpectedly while working on string:"+entry.getKey(), e);
+                    System.err.println("A thread interrupted unexpectedly while working on string:"+entry.getKey());
+                    //e.printStackTrace();
                 } catch (ExecutionException e) {
-                    e.printStackTrace();
+                    logger.warn("A thread experienced error while working on string:"+entry.getKey(), e);
+                    System.err.println("A thread experienced error while working on string:"+entry.getKey());
+                    //e.printStackTrace();
                 }
             }
             //System.out.println("Number Of Invalid Solutions:"+numberOfInvalidSolutions);
-            System.out.println(numberofvalidlines+"/"+numberofprocessedlines);
+            //debug point System.out.println(numberofvalidlines+"/"+numberofprocessedlines);
+            logger.debug("("+numberofvalidlines+"=="+numberofprocessedlines+") = "+(numberofvalidlines==numberofprocessedlines));
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.warn("Can not read stream.", e);
+            System.err.println("Can not read stream.");
+            list = null; //return null when there is an error effecting all source
+            // e.printStackTrace();
         }
 
         executorService.shutdown();
@@ -82,6 +92,8 @@ public class SudokuFileValidator {
     }
 
     public static boolean isValidLine(String line) {
+        //if a line is not valid for validation it will be skipped
+        //Even if the line is not defined as a comment, it will be skipped (it is a feature not a bug)
         if (line == null || line.length() != 81 || line.charAt(0) == '#' || !line.matches("[1-9]+")) {
             return false;
         }
