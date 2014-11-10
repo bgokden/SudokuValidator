@@ -22,24 +22,25 @@ public class Sudoku9x9BlockValidatorTest {
 
     @Test
     public void testValidate() throws Exception {
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
         String blockFalse = "147352968238769145569481732371546289426897513895123476984675321653214897712938645";
         String blockTrue = "147352968238769145569481732371546289426897513895123476984675321653214897712938654";
-        Sudoku9x9BlockValidator sudoku9x9BlockValidator = new Sudoku9x9BlockValidator(executorService, null);
+        //Sudoku9x9BlockValidator sudoku9x9BlockValidator = new Sudoku9x9BlockValidator( null);
 
-        boolean mustFalse = sudoku9x9BlockValidator.validate(blockFalse);
+        boolean mustFalse = Sudoku9x9BlockValidator.validate(blockFalse);
         System.out.println("Must False:" + mustFalse);
 
-        boolean mustTrue = sudoku9x9BlockValidator.validate(blockTrue);
+        boolean mustTrue = Sudoku9x9BlockValidator.validate(blockTrue);
         System.out.println("Must True:" + mustTrue);
 
         blockFalse = "123456789496738215758192246974215863231687594685349127567824931819563472342971658";
 
-        mustFalse = sudoku9x9BlockValidator.validate(blockFalse);
+        mustFalse = Sudoku9x9BlockValidator.validate(blockFalse);
         System.out.println("Must False:" + mustFalse);
 
-        executorService.shutdown();
-
+        //load test
+        for (int i = 0; i < 10000; i++) {
+            mustFalse = Sudoku9x9BlockValidator.validate(blockFalse);
+        }
     }
 
     @Test

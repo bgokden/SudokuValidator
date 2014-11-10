@@ -38,16 +38,19 @@ public class SudokuFileValidator implements ISudokuValidator {
             return null;
         }
         List<String> list = new LinkedList<String>();
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        int N_CPUS = Runtime.getRuntime().availableProcessors();
+        ExecutorService executorService = Executors.newFixedThreadPool(2*N_CPUS);
         Map<String, Future<Boolean>> lineValidations = new ConcurrentHashMap<String, Future<Boolean>>();
         int numberofvalidlines = 0;
         try {
+            long lStartTime = System.currentTimeMillis();
             BufferedReader br = new BufferedReader(reader);
             String line;
             while ((line = br.readLine()) != null) {
                 // process the line.
                 if (isValidLine(line)) {
-                    Future<Boolean> future = executorService.submit(new Sudoku9x9BlockValidator(executorService, line));
+                    //logger.debug("processed line num:"+numberofvalidlines);
+                    Future<Boolean> future = executorService.submit(new Sudoku9x9BlockValidator(line));
                     lineValidations.put(line, future);
                     numberofvalidlines++;
                 }
@@ -65,6 +68,7 @@ public class SudokuFileValidator implements ISudokuValidator {
                     if ( result == false) {
                         list.add(entry.getKey());
                         //System.out.println(entry.getKey());
+                        //logger.debug(entry.getKey());
                         //numberOfInvalidSolutions++;
                     }
                 } catch (InterruptedException e) {
@@ -77,6 +81,9 @@ public class SudokuFileValidator implements ISudokuValidator {
                     //e.printStackTrace();
                 }
             }
+            long lEndTime = System.currentTimeMillis();
+            long difference = lEndTime - lStartTime;
+            logger.debug("Elapsed time: "+difference);
             //System.out.println("Number Of Invalid Solutions:"+numberOfInvalidSolutions);
             //debug point System.out.println(numberofvalidlines+"/"+numberofprocessedlines);
             logger.debug("("+numberofvalidlines+"=="+numberofprocessedlines+") = "+(numberofvalidlines==numberofprocessedlines));

@@ -21,10 +21,9 @@ public class Sudoku9DigitValidatorTest {
 
     @Test
     public void testValidate() throws Exception {
-        Sudoku9DigitValidator sudoku9DigitValidator = new Sudoku9DigitValidator(null, null);
-        assertTrue(sudoku9DigitValidator.validate("123456789"));
-        System.out.println("123456789 :"+sudoku9DigitValidator.validate("123456789"));
-        assertTrue(sudoku9DigitValidator.validate("123446789"));
-        System.out.println("123446789 :"+sudoku9DigitValidator.validate("123446789"));
+        assertTrue(Sudoku9DigitValidator.validate("123456789"));
+        System.out.println("123456789 :"+Sudoku9DigitValidator.validate("123456789"));
+        assertFalse(Sudoku9DigitValidator.validate("123446789"));
+        System.out.println("123446789 :"+Sudoku9DigitValidator.validate("123446789"));
     }
 }
