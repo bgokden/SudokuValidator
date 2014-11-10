@@ -14,7 +14,7 @@ import java.util.concurrent.*;
  */
 public class SudokuFileValidator implements ISudokuValidator {
 
-    static final Logger logger = Logger.getLogger(SudokuFileValidator.class);
+    private static final Logger logger = Logger.getLogger(SudokuFileValidator.class);
 
     public SudokuFileValidator() {
     }
@@ -24,10 +24,11 @@ public class SudokuFileValidator implements ISudokuValidator {
         try {
             File file = new File(filename);
             reader = new FileReader(file);
+        } catch (FileNotFoundException e) {
+            logger.warn("File not found: " + filename, e);
+            return null;
         } catch (Exception e) {
-            logger.warn("File can not be opened :" + filename, e);
-            System.err.println("File can not be opened :" + filename);
-            //e.printStackTrace();
+            logger.warn("File can not be opened: " + filename, e);
             return null;
         }
         return validate(reader);
@@ -48,7 +49,7 @@ public class SudokuFileValidator implements ISudokuValidator {
             String line;
             while ((line = br.readLine()) != null) {
                 // process the line.
-                if (isValidLine(line)) {
+                if (isSudokuLine(line)) {
                     //logger.debug("processed line num:"+numberofvalidlines);
                     Future<Boolean> future = executorService.submit(new Sudoku9x9BlockValidator(line));
                     lineValidations.put(line, future);
@@ -73,23 +74,23 @@ public class SudokuFileValidator implements ISudokuValidator {
                     }
                 } catch (InterruptedException e) {
                     logger.warn("A thread interrupted unexpectedly while working on string:"+entry.getKey(), e);
-                    System.err.println("A thread interrupted unexpectedly while working on string:"+entry.getKey());
+                    //System.err.println("A thread interrupted unexpectedly while working on string:"+entry.getKey());
                     //e.printStackTrace();
                 } catch (ExecutionException e) {
                     logger.warn("A thread experienced error while working on string:"+entry.getKey(), e);
-                    System.err.println("A thread experienced error while working on string:"+entry.getKey());
+                    //System.err.println("A thread experienced error while working on string:"+entry.getKey());
                     //e.printStackTrace();
                 }
             }
             long lEndTime = System.currentTimeMillis();
             long difference = lEndTime - lStartTime;
-            logger.debug("Elapsed time: "+difference);
+            //logger.debug("Elapsed time: "+difference);
             //System.out.println("Number Of Invalid Solutions:"+numberOfInvalidSolutions);
             //debug point System.out.println(numberofvalidlines+"/"+numberofprocessedlines);
-            logger.debug("("+numberofvalidlines+"=="+numberofprocessedlines+") = "+(numberofvalidlines==numberofprocessedlines));
+            //logger.debug("("+numberofvalidlines+"=="+numberofprocessedlines+") = "+(numberofvalidlines==numberofprocessedlines));
         } catch (IOException e) {
             logger.warn("Can not read stream.", e);
-            System.err.println("Can not read stream.");
+            //System.err.println("Can not read stream.");
             list = null; //return null when there is an error effecting all source
             // e.printStackTrace();
         }
@@ -98,9 +99,9 @@ public class SudokuFileValidator implements ISudokuValidator {
         return list;
     }
 
-    public static boolean isValidLine(String line) {
+    public static boolean isSudokuLine(String line) {
         //if a line is not valid for validation it will be skipped
-        //Even if the line is not defined as a comment, it will be skipped (it is a feature not a bug)
+        //Even if the line is not defined as a comment, it will be skipped (it is a feature, not a bug)
         if (line == null || line.length() != 81 || line.charAt(0) == '#' || !line.matches("[1-9]+")) {
             return false;
         }

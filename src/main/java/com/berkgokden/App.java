@@ -1,6 +1,7 @@
 package com.berkgokden;
 
 import com.berkgokden.Impl.SudokuFileValidator;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,11 +10,12 @@ import java.io.Reader;
 import java.util.List;
 
 /**
- * Hello world!
+ * Main App
  *
  */
 public class App 
 {
+    private static final Logger logger = Logger.getLogger(App.class);
     public static void main( String[] args )
     {
         if (args.length == 0) {
@@ -27,9 +29,9 @@ public class App
         try {
             reader = new FileReader(file);
         } catch (FileNotFoundException e) {
-            System.err.println("File couldn't be opened.");
+            System.err.println("File not found.");
+            logger.warn("File not found.",e);
             return;
-            //e.printStackTrace();
         }
 
         ISudokuValidator sudokuValidator = new SudokuFileValidator();
